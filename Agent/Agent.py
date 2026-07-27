@@ -1,7 +1,7 @@
 #Imports - General Python
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
-from typing import Optional, Annotated
+from typing import Optional, Annotated, TypedDict
 
 #Imports - LangGraph
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -19,12 +19,16 @@ from tools.get_weather import get_weather
 load_dotenv()
 llm = ChatGoogleGenerativeAI(model="gemini-3.1-flash-lite")
 
+class DestinationDetails(BaseModel):
+    city_name: str = Field(description="The city name, e.g., 'Rome'")
+    country_code: str = Field(description="2-letter ISO country code, e.g., 'IT'")
+
 # Graph state used by extractor assistant and 
 class TripConstraint(BaseModel):
-    destination: Optional[str] = Field(default=None, description="The destination city")
-    budget: Optional[str] = Field(default=None, description="The budget for the trip")
-    start_date: Optional[str] = Field(default=None, description="The start date of the trip")
-    end_date: Optional[str] = Field(default=None, description="The end date of the trip")
+    destination: Optional[DestinationDetails] = Field(default=None, description="The destination city and 2 letter ISO code")
+    budget: Optional[str] = Field(default=None, description="The budget for the trip in USD")
+    start_date: Optional[str] = Field(default=None, description="The start date of the trip in YYYY-MM-DD format")
+    end_date: Optional[str] = Field(default=None, description="The end date of the trip in YYYY-MM-DD format")
 
 # Graph State Used by main Assistant, inherited from ^, also stores messages list with a reducer allowing for convos.
 class AgenticTravelState(TripConstraint):
@@ -41,8 +45,10 @@ def assistant(state: AgenticTravelState):
 
     #for the 4 vars below, if they are defined in state, get those values,
     #otherwise initalize with "Not Specified" (or a similar variant)
-
-    destination = state.destination or "Not specified"
+    if state.destination:
+        destination = f"{state.destination.city_name}, {state.destination.country_code}"
+    else:
+        destination = "Not specified"
     budget = state.budget or 0
     arrival = state.start_date or "Not specified"
     departure = state.end_date or "Not specified"
@@ -72,20 +78,21 @@ def update_node(state: AgenticTravelState):
         return {}
 
     # Pass current state to handle corrections
-    destination: Optional[str]
-    budget: Optional[str]
-    start_date: Optional[str]
-    end_date: Optional[str]
+    if state.destination:
+        dest_str = f"{state.destination.city_name}, {state.destination.country_code}"
+    else:
+        dest_str = "Not specified"
 
-    current_state_str = f"Destination: {state.destination}, Budget: {state.budget}, StartDate: {state.start_date}, EndDate: {state.end_date}"
+    current_state_str = f"Destination: {dest_str}, Budget: {state.budget}, StartDate: {state.start_date}, EndDate: {state.end_date}"
 
     prompt = f"""
-    You are a background state manager.
-    Current State: {current_state_str}
-    User's latest message: {last_user_msg}
+        You are a background state manager.
+        Current State: {current_state_str}
+        User's latest message: {last_user_msg}
 
-    Extract the travel constraints. If the user is changing their mind (e.g., a new city instead of the old one), output the new values.
-    If no constraints are mentioned, return nothing.
+        Extract the travel constraints. If the user is changing their mind (e.g., a new city instead of the old one), output the new values.
+        If the user mentions a city but not a country, infer and provide the correct 2-letter ISO country code yourself.
+        If no constraints are mentioned, return nothing.
     """
 
     result = structured_llm.invoke(prompt)
@@ -139,7 +146,12 @@ def userRequest(name,request):
         # Only print if we haven't seen this specific message ID yet
         if last_message.id not in printed_messages:
             print(f"--- State Variables ---")
-            print(f"Destination: {event.get('destination')}")
+            dest = event.get('destination')
+            if dest:
+                print(f"Destination: {dest.get('city_name')} ({dest.get('country_code')})")
+            else:
+                print("Destination: None")
+                
             print(f"Budget: {event.get('budget')}")
             print(f"-----------------------")
 

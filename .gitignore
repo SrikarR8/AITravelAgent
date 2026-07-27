@@ -1,0 +1,4 @@
+.env
+Agent/.env
+Agent/venv
+Agent/.venv
