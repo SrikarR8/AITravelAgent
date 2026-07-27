@@ -2,3 +2,4 @@
 Agent/.env
 Agent/venv
 Agent/.venv
+Agent/tools/__pycache__
