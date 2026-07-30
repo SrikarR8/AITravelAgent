@@ -2,6 +2,7 @@
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 from typing import Optional, Annotated, TypedDict
+from datetime import datetime
 
 #Imports - LangGraph
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -16,7 +17,11 @@ from tools.search_flights_and_hotels import search_flights, search_hotels
 from tools.search_places import search_places
 from tools.get_weather import get_weather
 
+
 load_dotenv()
+# get current local date and time
+now = datetime.now().strftime("%A, %Y-%m-%d %H:%M:%S")
+
 llm = ChatGoogleGenerativeAI(model="gemini-3.1-flash-lite")
 
 class DestinationDetails(BaseModel):
@@ -49,15 +54,17 @@ def assistant(state: AgenticTravelState):
         destination = f"{state.destination.city_name}, {state.destination.country_code}"
     else:
         destination = "Not specified"
+
     budget = state.budget or 0
     arrival = state.start_date or "Not specified"
     departure = state.end_date or "Not specified"
 
     #System Prompt, LLM prioritizes this most, more than any user inputs, etc.
-    sys_msg = SystemMessage(content="""
-        You are a friendly AI Travel Assistant currently running in a demo environment.
-        Your primary goal is to help users plan a trip by gathering their requirements and simulating tool calls.
-    """)
+    sys_msg = SystemMessage(content=f"""
+        You are a friendly AI Travel Assistant currently running in a demo environment. Your primary goal is to help users plan a trip by gathering their requirements and simulating tool calls. The current date is {now}
+        When presenting flight or hotel options, summarize the airline, price, and baggage, but never display the Offer ID to the user. Keep the Offer ID for your own internal tool usage.
+        When quoting flight prices, state that these are wholesale estimates and final checkout prices may vary slightly due to airline booking fees.
+        """)
 
     #Get and return LLM response using GEMINI (llm_with_tools)
     response = llm_with_tools.invoke([sys_msg] + state.messages)
@@ -153,6 +160,8 @@ def userRequest(name,request):
                 print("Destination: None")
                 
             print(f"Budget: {event.get('budget')}")
+            print(f"Start Date: {event.get('start_date')}")
+            print(f"End Date: {event.get('end_date')}")
             print(f"-----------------------")
 
             last_message.pretty_print()
@@ -160,8 +169,8 @@ def userRequest(name,request):
             # Add the message ID to our tracking set
             printed_messages.add(last_message.id)
 
-userRequest("user","I want to go to Tokyo next weekend. Can you find me a hotel and check the weather? If it is not raining can you check flights?")
-userRequest("user", "Scratch that plan a trip to paris next week")
+userRequest("user","I want to go to Turin next weekend from NYC. Can you find me a hotel and check the weather? If it is not raining can you check flights?")
+
     
 
 
