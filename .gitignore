@@ -1,4 +1,6 @@
 .env
+venv
+.venv
 Agent/.env
 Agent/venv
 Agent/.venv
