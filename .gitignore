@@ -1,6 +1,8 @@
 .env
 venv
 .venv
+.DS_Store
+Agent/.DS_Store
 Agent/.env
 Agent/venv
 Agent/.venv
