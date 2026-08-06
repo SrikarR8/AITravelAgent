@@ -1,8 +1,9 @@
 #Imports - General Python
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 from pydantic import BaseModel, Field
 from typing import Optional, Annotated, TypedDict
 from datetime import datetime
+import time
 
 #Imports - LangGraph
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -12,13 +13,13 @@ from langchain_core.tools import tool
 from langgraph.prebuilt import ToolNode
 
 #Imports - tools
-
+from tools.search_reddit import search_reddit_travel_qa
 from tools.search_flights_and_hotels import search_flights, search_hotels
 from tools.search_places import search_places
 from tools.get_weather import get_weather
 
 
-load_dotenv()
+load_dotenv(find_dotenv())
 # get current local date and time
 now = datetime.now().strftime("%A, %Y-%m-%d %H:%M:%S")
 
@@ -108,7 +109,7 @@ def update_node(state: AgenticTravelState):
     return result.model_dump(exclude_none=True)
 
 #Define and bind tools
-tools = [search_hotels,search_flights,search_places,get_weather]
+tools = [search_hotels,search_flights,search_places,get_weather,search_reddit_travel_qa]
 llm_with_tools = llm.bind_tools(tools=tools)
 
 #Routes to tools if the assistant called them, otherwise ends the turn.
@@ -169,7 +170,12 @@ def userRequest(name,request):
             # Add the message ID to our tracking set
             printed_messages.add(last_message.id)
 
-userRequest("user","I want to go to Turin next weekend from NYC. Can you find me a hotel and check the weather? If it is not raining can you check flights?")
+userRequest("user","What are some cheap to visit cities in europe?")
+time.sleep(61)
+userRequest("user","Whats the cheapest flight to Warsaw?")
+time.sleep(61)
+userRequest("user","JFK and next weekend")
+
 
     
 
