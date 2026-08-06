@@ -11,6 +11,7 @@ from langchain_core.messages import AnyMessage, SystemMessage
 from langgraph.graph import StateGraph, START, END, add_messages
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolNode
+from langgraph.checkpoint.memory import MemorySaver
 
 #Imports - tools
 from tools.search_reddit import search_reddit_travel_qa
@@ -25,13 +26,14 @@ now = datetime.now().strftime("%A, %Y-%m-%d %H:%M:%S")
 
 llm = ChatGoogleGenerativeAI(model="gemini-3.1-flash-lite")
 
-class DestinationDetails(BaseModel):
+class CityDetails(BaseModel):
     city_name: str = Field(description="The city name, e.g., 'Rome'")
     country_code: str = Field(description="2-letter ISO country code, e.g., 'IT'")
 
 # Graph state used by extractor assistant and 
 class TripConstraint(BaseModel):
-    destination: Optional[DestinationDetails] = Field(default=None, description="The destination city and 2 letter ISO code")
+    starting: Optional[CityDetails] = Field(default=None, description="The starting city and 2 letter ISO code")
+    destination: Optional[CityDetails] = Field(default=None, description="The destination city and 2 letter ISO code")
     budget: Optional[str] = Field(default=None, description="The budget for the trip in USD")
     start_date: Optional[str] = Field(default=None, description="The start date of the trip in YYYY-MM-DD format")
     end_date: Optional[str] = Field(default=None, description="The end date of the trip in YYYY-MM-DD format")
@@ -59,13 +61,17 @@ def assistant(state: AgenticTravelState):
     budget = state.budget or 0
     arrival = state.start_date or "Not specified"
     departure = state.end_date or "Not specified"
-
+    dest_str = f"{state.destination.city_name} ({state.destination.country_code})" if state.destination else "Not specified"
+    start_str = f"{state.starting.city_name} ({state.starting.country_code})" if state.starting else "Not specified"
     #System Prompt, LLM prioritizes this most, more than any user inputs, etc.
-    sys_msg = SystemMessage(content=f"""
-        You are a friendly AI Travel Assistant currently running in a demo environment. Your primary goal is to help users plan a trip by gathering their requirements and simulating tool calls. The current date is {now}
-        When presenting flight or hotel options, summarize the airline, price, and baggage, but never display the Offer ID to the user. Keep the Offer ID for your own internal tool usage.
-        When quoting flight prices, state that these are wholesale estimates and final checkout prices may vary slightly due to airline booking fees.
-        """)
+    sys_msg = SystemMessage(content=f"""You are a friendly AI Travel Assistant currently running in a demo environment.
+        Current Date/Time: {now}
+        ACTIVE TRIP CONSTRAINTS: Origin/Starting: {start_str}, Destination: {dest_str},
+        Budget: {budget}, Start Date: {arrival}, End Date: {departure}
+
+        When presenting flight or hotel options, summarize the airline, price, and baggage, but never display the Offer ID to the user.
+        Try to make sure all of the 5 trip constraints are specified, otherwise it may lead to empty results
+    """)
 
     #Get and return LLM response using GEMINI (llm_with_tools)
     response = llm_with_tools.invoke([sys_msg] + state.messages)
@@ -85,14 +91,10 @@ def update_node(state: AgenticTravelState):
     if not last_user_msg:
         return {}
 
-    # Pass current state to handle corrections
-    if state.destination:
-        dest_str = f"{state.destination.city_name}, {state.destination.country_code}"
-    else:
-        dest_str = "Not specified"
-
-    current_state_str = f"Destination: {dest_str}, Budget: {state.budget}, StartDate: {state.start_date}, EndDate: {state.end_date}"
-
+    dest_str = f"{state.destination.city_name}, {state.destination.country_code}" if state.destination else "Not specified"
+    start_str = f"{state.starting.city_name}, {state.starting.country_code}" if state.starting else "Not specified"
+    
+    current_state_str = f"Starting: {start_str}, Destination: {dest_str}, Budget: {state.budget}, StartDate: {state.start_date}, EndDate: {state.end_date}"
     prompt = f"""
         You are a background state manager.
         Current State: {current_state_str}
@@ -109,13 +111,12 @@ def update_node(state: AgenticTravelState):
     return result.model_dump(exclude_none=True)
 
 #Define and bind tools
-tools = [search_hotels,search_flights,search_places,get_weather,search_reddit_travel_qa]
+tools = [search_hotels,search_flights,get_weather,search_reddit_travel_qa]
 llm_with_tools = llm.bind_tools(tools=tools)
 
 #Routes to tools if the assistant called them, otherwise ends the turn.
-def route_after_update(state: AgenticTravelState):
+def route_after_assistant(state: AgenticTravelState):
     last_message = state.messages[-1]
-
     if hasattr(last_message, "tool_calls") and last_message.tool_calls:
         return "tools"
     return END
@@ -127,11 +128,11 @@ builder.add_node("assistant", assistant)
 builder.add_node("update_node", update_node)
 builder.add_node("tools", ToolNode(tools))
 
-builder.add_edge(START, "assistant")
-builder.add_edge("assistant", "update_node")
+builder.add_edge(START, "update_node")
+builder.add_edge("update_node", "assistant")
 builder.add_conditional_edges(
-    "update_node",
-    route_after_update,
+    "assistant",
+    route_after_assistant,
     {
         "tools": "tools",
         END: END
@@ -139,49 +140,73 @@ builder.add_conditional_edges(
 )
 builder.add_edge("tools", "assistant")
 
-graph = builder.compile()
-
-def userRequest(name,request):
-    initial_state = {
-    "messages": [
-        (f"{name}", f"{request}")
-    ]
-}
+checkpointer = MemorySaver()
+graph = builder.compile(checkpointer=checkpointer)
+def userRequest(name, request, thread_id="session_1", debug=False):
+    """
+    Executes a single user request through the LangGraph agent state flow.
+    
+    :param name: Username identifier
+    :param request: The human message input string
+    :param thread_id: Memory thread identifier for persistent conversation
+    :param debug: If True, prints internal state variables alongside messages
+    """
+    config = {"configurable": {"thread_id": thread_id}}
+    initial_input = {"messages": [(name, request)]}
+    
     printed_messages = set()
-    for event in graph.stream(initial_state, stream_mode="values"):
+    for event in graph.stream(initial_input, config=config, stream_mode="values"):
         last_message = event["messages"][-1]
 
-        # Only print if we haven't seen this specific message ID yet
         if last_message.id not in printed_messages:
-            print(f"--- State Variables ---")
-            dest = event.get('destination')
-            if dest:
-                print(f"Destination: {dest.get('city_name')} ({dest.get('country_code')})")
-            else:
-                print("Destination: None")
-                
-            print(f"Budget: {event.get('budget')}")
-            print(f"Start Date: {event.get('start_date')}")
-            print(f"End Date: {event.get('end_date')}")
-            print(f"-----------------------")
+            # Print state variables only when debug mode is enabled
+            if debug:
+                print(f"\n--- State Variables ---")
+                dest = event.get('destination')
+                if dest:
+                    city = dest.get('city_name') if isinstance(dest, dict) else getattr(dest, 'city_name', 'None')
+                    country = dest.get('country_code') if isinstance(dest, dict) else getattr(dest, 'country_code', 'None')
+                    print(f"Destination: {city} ({country})")
+                else:
+                    print("Destination: None")
+                print(f"Budget: {event.get('budget')}")
+                print(f"Start Date: {event.get('start_date')}")
+                print(f"End Date: {event.get('end_date')}")
+                print(f"-----------------------")
 
+            # Always print conversational message flow
             last_message.pretty_print()
-
-            # Add the message ID to our tracking set
             printed_messages.add(last_message.id)
 
-userRequest("user","What are some cheap to visit cities in europe?")
-time.sleep(61)
-userRequest("user","Whats the cheapest flight to Warsaw?")
-time.sleep(61)
-userRequest("user","JFK and next weekend")
 
-
+def main():
+    print("=== AI Travel Agent Interactive Session ===")
+    print("Type 'quit' or 'exit' to end the session.\n")
     
+    # Set to True to display state variables, or False to only display conversation
+    DEBUG_MODE = False
+    
+    # Shared session ID keeps memory checkpointer active across turns
+    session_id = "terminal_chat_1"
+
+    while True:
+        try:
+            user_input = input("\nYou: ")
+            
+            if user_input.lower().strip() in ["quit", "exit", "q"]:
+                print("\nEnding session. Safe travels!")
+                break
+
+            if not user_input.strip():
+                continue
+
+            # Calls userRequest with the debug flag setting
+            userRequest("user", user_input, thread_id=session_id, debug=DEBUG_MODE)
+
+        except (KeyboardInterrupt, EOFError):
+            print("\nEnding session. Safe travels!")
+            break
 
 
-
-
-
-
-
+if __name__ == "__main__":
+    main()

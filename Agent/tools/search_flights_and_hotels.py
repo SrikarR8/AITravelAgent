@@ -13,6 +13,7 @@ headers = {
 
 #@tool
 def search_hotels(cityName: str, countryCode: str, checkinDate: str, checkoutDate:str) -> dict:
+
     """
     Use this tool to search hotels, their prices, ratings, etc.
     Args:
@@ -23,7 +24,14 @@ def search_hotels(cityName: str, countryCode: str, checkinDate: str, checkoutDat
     Returns a dictionary where hotelID is the key and the value holds another dictionary which holds the hotel's properties
     """
     #TODO: Sort out occupanies, currently hardcoded to 4 adults, needs to be dynamic instead
-
+    if cityName == "":
+        return "City name not provided, cannot call API"
+    if countryCode == "":
+        return "Country Code not provided, cannot call API"
+    if checkinDate == "":
+        return "Check in date not provided, cannot call API"
+    if checkoutDate == "":
+        return "Check out date not provided, cannot call API"
     url = "https://api.liteapi.travel/v3.0/hotels/rates"
 
     payload = {
@@ -74,6 +82,7 @@ def search_hotels(cityName: str, countryCode: str, checkinDate: str, checkoutDat
 
 #@tool
 def search_flights(startDate: str, endDate:str, airportNameDep: str = "", airportNameArr: str = "") -> dict:
+
     """
     Use this tool to search flights, their prices, and related metadata
     Args:
@@ -83,6 +92,14 @@ def search_flights(startDate: str, endDate:str, airportNameDep: str = "", airpor
         airportNameArr: The IATA code for the destination airport the user wants to go to
     Returns a dictionary where offerID is the key and the value holds another dictionary which holds the hotel's properties
     """
+    if startDate == "":
+        return "Start Date not provided, cannot call API"
+    if endDate == "":
+        return "End Date not provided, cannot call API"
+    if airportNameDep == "":
+        return "Departing Airport name not provided, cannot call API"
+    if airportNameArr == "":
+        return "Arrival airport name not provided, cannot call API"
 #def search_flights(airportName: str = "") -> dict:
     #TODO: Sort out occupanies, currently hardcoded to 4 adults, needs to be dynamic instead
     url = "https://api.liteapi.travel/v3.0/flights/rates"
@@ -187,7 +204,7 @@ def search_flights(startDate: str, endDate:str, airportNameDep: str = "", airpor
         )
 
     llm_summary = "\n".join(summary_lines)
-#LangGraph only passes [0] to state
+    #LangGraph only passes [0] to state
     return llm_summary, flightsResDict
 
 

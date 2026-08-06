@@ -11,6 +11,13 @@ def get_weather(city_name: str, start_date: str, end_date: str):
     Gets 14-day live weather or 10-year climate averages for a city.
     start_date and end_date must be YYYY-MM-DD.
     """
+    if city_name == "":
+        return "City name not provided, cannot call API"
+    if start_date == "":
+        return "Start date not provided, cannot call API"
+    if end_date == "":
+        return "End date not provided, cannot call API"
+    
     geo_url = f"https://geocoding-api.open-meteo.com/v1/search?name={city_name}&count=1"
     location = requests.get(geo_url).json()["results"][0]
     lat = location["latitude"]
