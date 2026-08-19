@@ -1,11 +1,52 @@
-#This file will be used to test out the tools, example values will be passed in.
+# This file tests tool success & error handling behavior
 
-#Imports - tools
 from tools.search_flights_and_hotels import search_flights, search_hotels
 from tools.search_places import search_places
 from tools.get_weather import get_weather
+from tools.search_reddit import search_reddit_travel_qa
+from tools.convert_currency import convert_currency
 
-a,b =search_flights("2026-08-01","2026-08-11", "HYD","DEL") 
-print(a)
-#print(search_flights("2026-08-01","2026-08-11","HYD","DEL"))
-#print(get_weather("Paris","2027-08-01","2027-08-04"))
+print("=== 1. Testing Flight Search with Invalid IATA Code ===")
+print(search_flights.invoke({
+    "startDate": "2026-08-01",
+    "endDate": "2026-08-10",
+    "airportNameDep": "NewYork",
+    "airportNameArr": "LON"
+}))
+
+print("\n=== 2. Testing Flight Search with Invalid Dates (Reversed) ===")
+print(search_flights.invoke({
+    "startDate": "2026-08-15",
+    "endDate": "2026-08-01",
+    "airportNameDep": "JFK",
+    "airportNameArr": "LHR"
+}))
+
+print("\n=== 3. Testing Weather with Invalid Date Format ===")
+print(get_weather.invoke({
+    "city_name": "Paris",
+    "start_date": "next week",
+    "end_date": "2026-08-10"
+}))
+
+print("\n=== 4. Testing Weather with Non-Existent City ===")
+print(get_weather.invoke({
+    "city_name": "NonExistentCityXyZ999",
+    "start_date": "2026-08-01",
+    "end_date": "2026-08-10"
+}))
+
+print("\n=== 5. Testing Currency with Invalid Currency Code ===")
+print(convert_currency.invoke({
+    "amount": 100,
+    "from_currency": "USD",
+    "to_currency": "FAKECURR"
+}))
+
+print("\n=== 6. Testing Hotel with Invalid Country Code ===")
+print(search_hotels.invoke({
+    "cityName": "Rome",
+    "countryCode": "ITALY",
+    "checkinDate": "2026-08-01",
+    "checkoutDate": "2026-08-05"
+}))

@@ -18,6 +18,7 @@ from tools.search_reddit import search_reddit_travel_qa
 from tools.search_flights_and_hotels import search_flights, search_hotels
 from tools.search_places import search_places
 from tools.get_weather import get_weather
+from tools.convert_currency import convert_currency
 
 
 load_dotenv(find_dotenv())
@@ -68,9 +69,9 @@ def assistant(state: AgenticTravelState):
         Current Date/Time: {now}
         ACTIVE TRIP CONSTRAINTS: Origin/Starting: {start_str}, Destination: {dest_str},
         Budget: {budget}, Start Date: {arrival}, End Date: {departure}
-
         When presenting flight or hotel options, summarize the airline, price, and baggage, but never display the Offer ID to the user.
-        Try to make sure all of the 5 trip constraints are specified, otherwise it may lead to empty results
+        Try to make sure all of the 5 trip constraints are specified, otherwise it may lead to empty results.
+        Currency & Budget: If a budget or cost is mentioned and the destination country uses a currency other than USD (e.g., EUR for EU countries, JPY for Japan, GBP for UK, INR for India, etc.), check the destination variable in state to determine the appropriate local currency and use the `convert_currency` tool to provide the traveler with both USD and local currency equivalents.
     """)
 
     #Get and return LLM response using GEMINI (llm_with_tools)
@@ -111,7 +112,7 @@ def update_node(state: AgenticTravelState):
     return result.model_dump(exclude_none=True)
 
 #Define and bind tools
-tools = [search_hotels,search_flights,get_weather,search_reddit_travel_qa]
+tools = [search_hotels, search_flights, get_weather, search_reddit_travel_qa, search_places, convert_currency]
 llm_with_tools = llm.bind_tools(tools=tools)
 
 #Routes to tools if the assistant called them, otherwise ends the turn.
