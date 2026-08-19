@@ -1,0 +1,29 @@
+:root {
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Official Stitch / Figma Color Palette */
+  --color-primary: #15803D;
+  --color-primary-hover: #166534;
+  --color-secondary: #C2410C;
+  --color-secondary-hover: #9a3412;
+  --color-tertiary: #FDFCF0;
+  --color-neutral: #334155;
+  --color-neutral-muted: #64748b;
+  
+  --bg-page: var(--color-tertiary);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #ffffff;
+  color: var(--color-neutral);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}

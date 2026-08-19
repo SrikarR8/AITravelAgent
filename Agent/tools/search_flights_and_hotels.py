@@ -38,7 +38,7 @@ def _validate_iata(iata_code: str, field_name: str) -> str | None:
 
 
 @tool
-def search_hotels(cityName: str, countryCode: str, checkinDate: str, checkoutDate: str) -> str:
+def search_hotels(cityName: str, countryCode: str, checkinDate: str, checkoutDate: str, numAdults: int = 1) -> str:
     """
     Use this tool to search hotels, room rates, lowest prices, and availability in a destination city.
 
@@ -47,11 +47,17 @@ def search_hotels(cityName: str, countryCode: str, checkinDate: str, checkoutDat
         countryCode: 2-letter ISO country code (e.g., 'IT', 'JP', 'FR', 'US').
         checkinDate: Check-in date in YYYY-MM-DD format.
         checkoutDate: Check-out date in YYYY-MM-DD format.
+        numAdults: Number of adult guests/travelers (default is 1).
 
     Returns:
         A formatted string summarizing available hotels and prices, or a descriptive error message if inputs are invalid.
     """
     # 1. Input validations
+    try:
+        num_adults_clean = max(1, int(numAdults))
+    except (ValueError, TypeError):
+        num_adults_clean = 1
+
     if not cityName or not cityName.strip():
         return "City name was not provided. Please specify a destination city to search hotels."
 
@@ -86,7 +92,7 @@ def search_hotels(cityName: str, countryCode: str, checkinDate: str, checkoutDat
         "guestNationality": "US",
         "occupancies": [
             {
-                "adults": 2,
+                "adults": num_adults_clean,
                 "children": []
             }
         ]
@@ -144,7 +150,7 @@ def search_hotels(cityName: str, countryCode: str, checkinDate: str, checkoutDat
 
 
 @tool
-def search_flights(startDate: str, endDate: str, airportNameDep: str = "", airportNameArr: str = "") -> str:
+def search_flights(startDate: str, endDate: str, airportNameDep: str = "", airportNameArr: str = "", numAdults: int = 1) -> str:
     """
     Use this tool to search round-trip flights, pricing, airlines, luggage allowance, and connections.
 
@@ -153,11 +159,17 @@ def search_flights(startDate: str, endDate: str, airportNameDep: str = "", airpo
         endDate: Return date in YYYY-MM-DD format (e.g., '2026-08-10').
         airportNameDep: 3-letter IATA code for departure airport (e.g., 'JFK', 'LAX', 'ORD', 'LHR').
         airportNameArr: 3-letter IATA code for arrival destination airport (e.g., 'HND', 'CDG', 'FCO', 'DXB').
+        numAdults: Number of adult passengers/travelers (default is 1).
 
     Returns:
         A summary of the cheapest flights and flight details, or a descriptive error message if inputs are invalid.
     """
     # 1. Validations
+    try:
+        num_adults_clean = max(1, int(numAdults))
+    except (ValueError, TypeError):
+        num_adults_clean = 1
+
     dep_err = _validate_iata(airportNameDep, "Departure Airport (airportNameDep)")
     if dep_err:
         return dep_err
@@ -205,7 +217,7 @@ def search_flights(startDate: str, endDate: str, airportNameDep: str = "", airpo
                 "direction": "INBOUND"
             }
         ],
-        "adults": 1,
+        "adults": num_adults_clean,
         "children": 0,
         "infants": 0,
         "currency": "USD",

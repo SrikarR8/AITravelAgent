@@ -49,7 +49,7 @@ def search_reddit_travel_qa(query: str, k: int = 3) -> str:
         k: The number of relevant discussion matches to retrieve (default is 3).
 
     Returns:
-        A formatted string containing the matching Reddit questions and answers, or an error message if retrieval fails.
+        A formatted string containing the matching Reddit questions and answers, or an error message.
     """
     if not query or not query.strip():
         return "Query was empty. Please provide a search phrase or travel question."

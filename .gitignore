@@ -1,9 +1,26 @@
+# Environments and Config
 .env
-venv
-.venv
+.env.*
+*.env
+
+# Virtual Environments
+.venv/
+.venv*/
+venv/
+env/
+ENV/
+Agent/venv/
+Agent/.venv/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*/__pycache__/
+*/*/__pycache__/
+*.py[cod]
+*$py.class
+
+# OS Generated Files
 .DS_Store
-Agent/.DS_Store
-Agent/.env
-Agent/venv
-Agent/.venv
-Agent/tools/__pycache__
+*/.DS_Store
+*/*/.DS_Store
+Thumbs.db
