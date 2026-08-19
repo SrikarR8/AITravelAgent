@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import './App.css';
 import { Sparkles } from 'lucide-react';
 
-export default function App() {
-  const [prompt, setPrompt] = useState('');
-  const [activeTab, setActiveTab] = useState('discover');
+export default function App(): React.JSX.Element {
+  const [prompt, setPrompt] = useState<string>('');
+  const [activeTab, setActiveTab] = useState<string>('discover');
 
   // High-res royalty-free template photo of Amalfi Coast / Positano cliffside overlooking the Mediterranean sea
-  const heroImageUrl = "https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=2400&q=85";
+  const heroImageUrl: string = "https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=2400&q=85";
 
-  const handlePlanSubmit = (e) => {
+  const handlePlanSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     if (prompt.trim()) {
       console.log('Initiating travel plan for:', prompt);
@@ -56,10 +56,10 @@ export default function App() {
         </nav>
 
         <div className="header-actions">
-          <button className="btn-login">
+          <button className="btn-login" type="button">
             Log In
           </button>
-          <button className="btn-signup">
+          <button className="btn-signup" type="button">
             Sign Up
           </button>
         </div>
@@ -93,7 +93,7 @@ export default function App() {
               type="text" 
               className="search-input" 
               value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPrompt(e.target.value)}
               placeholder="A historical walking tour of Istanbul's spice markets..."
               aria-label="Trip planning search input"
             />
