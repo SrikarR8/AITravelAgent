@@ -11,7 +11,7 @@ export const Home: React.FC<HomeProps> = ({
   isLoggedIn = true,
 }) => {
   return (
-    <div className="min-h-screen flex flex-col bg-[#f8f9ff]">
+    <div className="min-h-screen flex flex-col bg-[#fdfcf0]">
       {/* Home page with isLandingPage={false} and activeSection="Home" */}
       <Navbar
         isLoggedIn={isLoggedIn}

@@ -58,21 +58,13 @@ export const Auth: React.FC<AuthProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Simulated auth success
-    if (onAuthSuccess) {
-      onAuthSuccess()
-    } else {
-      navigate('/home')
-    }
+    onAuthSuccess?.()
+    navigate('/home')
   }
 
   const handleGoogleAuth = () => {
-    // Simulated Google OAuth
-    if (onAuthSuccess) {
-      onAuthSuccess()
-    } else {
-      navigate('/home')
-    }
+    onAuthSuccess?.()
+    navigate('/home')
   }
 
   const toggleAuthMode = () => {
@@ -223,25 +215,13 @@ export const Auth: React.FC<AuthProps> = ({
 
             {/* Password field */}
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label
-                  htmlFor="password"
-                  className="block text-xs font-medium text-slate-700"
-                  style={{ fontFamily: "var(--font-sans, 'Outfit', sans-serif)" }}
-                >
-                  Password
-                </label>
-                {logInPage && (
-                  <a
-                    href="#"
-                    onClick={(e) => e.preventDefault()}
-                    className="text-[11px] text-[#00652c] hover:underline"
-                    style={{ fontFamily: "var(--font-sans, 'Outfit', sans-serif)" }}
-                  >
-                    Forgot password?
-                  </a>
-                )}
-              </div>
+              <label
+                htmlFor="password"
+                className="block text-xs font-medium text-slate-700 mb-1"
+                style={{ fontFamily: "var(--font-sans, 'Outfit', sans-serif)" }}
+              >
+                Password
+              </label>
               <input
                 id="password"
                 type="password"
@@ -252,6 +232,18 @@ export const Auth: React.FC<AuthProps> = ({
                 className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#00652c] focus:ring-1 focus:ring-[#00652c] transition-colors"
                 style={{ fontFamily: "var(--font-sans, 'Outfit', sans-serif)" }}
               />
+              {logInPage && (
+                <div className="flex justify-end mt-1.5">
+                  <a
+                    href="#"
+                    onClick={(e) => e.preventDefault()}
+                    className="text-[11px] text-[#00652c] hover:underline"
+                    style={{ fontFamily: "var(--font-sans, 'Outfit', sans-serif)" }}
+                  >
+                    Forgot password?
+                  </a>
+                </div>
+              )}
             </div>
 
             {/* Submit Button */}

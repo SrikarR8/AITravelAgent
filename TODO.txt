@@ -1,0 +1,60 @@
+================================================================================
+NOMAD'S DREAM - PROJECT TODO & DEFERRED ARCHITECTURE LOG
+================================================================================
+
+[CURRENT FOCUS]
+- UI Component Design & Frontend Card Templates
+
+--------------------------------------------------------------------------------
+1. BACKEND & AGENT IMPLEMENTATION (DEFERRED TASKS)
+--------------------------------------------------------------------------------
+
+[ ] 1.1 Tavily + OpenTripMap Activities Tool
+    - File: Agent/tools/search_activities.py
+    - Integration: Tavily Search API + OpenTripMap API
+    - Purpose: Search for walking tours, artisan workshops, pottery masterclasses,
+      tea ceremonies, guided excursions, and localized "things to do" that 
+      standard POI gazetteers (Nominatim) cannot provide.
+
+[ ] 1.2 UI Card Extractor Node in LangGraph
+    - File: Agent/Agent.py
+    - Node: ui_card_extractor (placed right after assistant/tools before END)
+    - Approach:
+      * Deterministic Triggers (Zero LLM cost):
+        - get_weather tool output -> Weather Card payload
+        - calculate_travel_time / search_flights -> Route & Map Card payload
+        - search_hotels / search_places -> Hotel / Place / Activity Card payload
+        - state.destination set/changed -> Trigger VectorDB Travel Tips query
+      * Semantic Extractor (Fallback):
+        - When assistant discusses places/tips in natural language without tool calls,
+          run fast Gemini structured output with Pydantic schema (UICardPayload).
+    - Emits unified JSON per turn: { "message": "...", "cards": { ... } }
+
+[ ] 1.3 Destination VectorDB for Cultural Travel Tips
+    - Store local cultural etiquette, customs, seasonal tips, and hidden advice.
+    - Query automatically whenever state.destination is identified.
+
+[ ] 1.4 API / WebSocket Bridge to UI
+    - Expose LangGraph stream via FastAPI / WebSockets.
+    - Send real-time conversational streaming tokens + structured card payloads.
+
+--------------------------------------------------------------------------------
+2. FRONTEND & UI IMPLEMENTATION (NEXT STEPS)
+--------------------------------------------------------------------------------
+
+[ ] 2.1 Left-Column Dynamic Card Templates (Design & Code)
+    - Card 1: Travel Tips Card (Cultural wisdom, local norms, etiquette tips)
+    - Card 2: Route & Map Card (Interactive map, origin/destination line, transit mode, ETA)
+    - Card 3: Hotel / Place / Activity Card (5-star rating, hero photography, badges, address)
+    - Card 4: Weather Widget Card (Minimalist iOS lock screen aesthetic, temp, condition, forecast)
+
+[ ] 2.2 In-App Trips Layout (Trips.tsx)
+    - Responsive 2-column split view:
+      * Left Column: Stacked / animated dynamic context cards.
+      * Right Column: shadcn-chat AI Concierge interface.
+    - Card state manager: Dynamically mounts / updates cards based on conversation triggers.
+
+[ ] 2.3 Home & Settings Dashboard Expansion
+    - Build out Home.tsx and Settings.tsx pages following design system tokens.
+
+================================================================================

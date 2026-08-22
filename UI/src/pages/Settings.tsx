@@ -11,7 +11,7 @@ export const Settings: React.FC<SettingsProps> = ({
   isLoggedIn = false,
 }) => {
   return (
-    <div className="min-h-screen flex flex-col bg-[#f8f9ff]">
+    <div className="min-h-screen flex flex-col bg-[#fdfcf0]">
       {/* Settings page with isLandingPage={false} and activeSection="Settings" */}
       <Navbar
         isLoggedIn={isLoggedIn}

@@ -110,9 +110,11 @@ def search_hotels(cityName: str, countryCode: str, checkinDate: str, checkoutDat
         for hotel in data.get("hotels", []):
             h_id = hotel.get("id")
             if h_id:
+                rev_count = hotel.get("reviewsCount") or hotel.get("reviewCount") or hotel.get("reviews_count") or "N/A"
                 hotel_data_dict[h_id] = {
                     "name": hotel.get("name", "Unknown Hotel"),
                     "rating": hotel.get("rating", "N/A"),
+                    "review_count": rev_count,
                     "address": hotel.get("address", "N/A")
                 }
 
@@ -137,9 +139,12 @@ def search_hotels(cityName: str, countryCode: str, checkinDate: str, checkoutDat
         summary_lines = [f"Found {len(hotel_data_dict)} hotel options in {cityName.strip()}:"]
         for idx, (h_id, info) in enumerate(list(hotel_data_dict.items())[:5], start=1):
             name = info.get("name", "Hotel")
+            addr = info.get("address", "N/A")
             price = f"${info.get('lowest_price')}" if info.get('lowest_price') else "Price unavailable"
-            rating = f"Rating: {info.get('rating')}" if info.get('rating') else ""
-            summary_lines.append(f"{idx}. {name} | {price} | {rating}")
+            rating = f"Rating: {info.get('rating')}" if info.get('rating') else "Rating: N/A"
+            rev_count = info.get("review_count")
+            rev_str = f" ({rev_count} reviews)" if rev_count and rev_count != "N/A" else ""
+            summary_lines.append(f"{idx}. {name} | Address: {addr} | Price: {price} | {rating}{rev_str}")
 
         return "\n".join(summary_lines)
 
