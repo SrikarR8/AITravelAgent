@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
-import { MessageSquareDashed } from 'lucide-react'
-import { Navbar, type NavSection } from '../components'
-import { TimelineCard, FlightTravelCard } from '../components/timeline cards'
+import { Navbar, type NavSection, ChatWindow } from '../components'
+import { TimelineCard, FlightTravelCard, WeatherCard, WalkTransitCard } from '../components/timeline cards'
 import dest0 from '../assets/images/destination_0.jpg'
 import dest1 from '../assets/images/destination_1.jpg'
 import dest2 from '../assets/images/destination_2.jpg'
@@ -111,32 +110,16 @@ export const Trips: React.FC<TripsProps> = ({
       <main className="flex-1 w-full px-[2.5%] py-4 flex flex-col min-h-0">
         {/* 2-Column Split with Vertical Divider separating LHS and RHS */}
         <div className="w-full flex flex-col lg:flex-row justify-between items-stretch flex-1 gap-6 lg:gap-0 min-h-0">
-          {/* Left: Chat Window Placeholder spanning 2.5% -> 45% of viewport width */}
-          <div
-            className="w-full lg:w-[44.737%] h-full bg-white rounded-3xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center p-6 text-center shadow-xs"
-          >
-            <div className="w-16 h-16 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mb-4">
-              <MessageSquareDashed className="w-8 h-8 text-slate-400" />
-            </div>
-            <h3
-              className="text-lg font-bold text-slate-700 mb-1"
-              style={{ fontFamily: "var(--font-sans, 'Outfit', sans-serif)" }}
-            >
-              Chat Window Placeholder
-            </h3>
-            <p
-              className="text-xs text-slate-400 max-w-sm m-0"
-              style={{ fontFamily: "var(--font-sans, 'Outfit', sans-serif)" }}
-            >
-              The AI Concierge conversational stream and input window will be positioned here.
-            </p>
+          {/* Left: Chat Window spanning 47.5% of viewport width */}
+          <div className="w-full lg:w-[47.5%] h-full min-h-0">
+            <ChatWindow />
           </div>
 
           {/* Center Vertical Separator Line between LHS and RHS */}
           <div className="hidden lg:block w-px self-stretch bg-slate-300/70 my-2" />
 
-          {/* Right: Timeline Cards Column spanning 50% -> 97.5% of viewport width */}
-          <div className="w-full lg:w-[50%] h-full flex flex-col gap-6 overflow-y-auto timeline-scrollbar pr-2 pb-8">
+          {/* Right: Timeline Cards Column spanning 47.5% of viewport width */}
+          <div className="w-full lg:w-[47.5%] h-full flex flex-col gap-6 overflow-y-auto timeline-scrollbar pr-2 pb-8">
             {/* Timeline Item 0: Flight / Transit (London to Paris) */}
             <div className="flex flex-col gap-2.5">
               <div className="w-full">
@@ -151,6 +134,36 @@ export const Trips: React.FC<TripsProps> = ({
               {/* 100% Full-Width FlightTravelCard with 3 flight options & layover support */}
               <div className="w-full">
                 <FlightTravelCard />
+              </div>
+            </div>
+
+            {/* Timeline Item 0.5: Destination Weather Overview */}
+            <div className="flex flex-col gap-2.5">
+              <div className="w-full">
+                <h4
+                  className="text-base md:text-lg font-bold text-slate-900 m-0"
+                  style={{ fontFamily: "var(--font-serif, 'Playfair Display', serif)" }}
+                >
+                  Destination Weather: Paris, France
+                </h4>
+              </div>
+
+              {/* 100% Full-Width WeatherCard */}
+              <div className="w-full">
+                <WeatherCard
+                  city="Paris"
+                  country="France"
+                  startDate="Oct 25, 2026"
+                  endDate="Nov 01, 2026"
+                  avgHighC={16}
+                  avgLowC={8}
+                  avgHighF={61}
+                  avgLowF={46}
+                  precipDailyMm={1.8}
+                  totalPrecipMm={12.6}
+                  peakUvIndex={3.2}
+                  windSpeedKmh={16.0}
+                />
               </div>
             </div>
 
@@ -174,13 +187,12 @@ export const Trips: React.FC<TripsProps> = ({
                   return (
                     <div
                       key={hotel.id}
-                      className={`overflow-hidden transition-all duration-450 ease-[cubic-bezier(0.4,0,0.2,1)] ${
-                        isCollapsed
+                      className={`overflow-hidden transition-all duration-450 ease-[cubic-bezier(0.4,0,0.2,1)] ${isCollapsed
                           ? 'w-0 flex-[0_0_0px] max-h-[195px] opacity-0 pointer-events-none p-0 m-0'
                           : isSelected
-                          ? 'w-full flex-1 max-h-[195px] opacity-100'
-                          : 'w-full flex-1 max-h-[320px] opacity-100'
-                      }`}
+                            ? 'w-full flex-1 max-h-[195px] opacity-100'
+                            : 'w-full flex-1 max-h-[320px] opacity-100'
+                        }`}
                     >
                       <TimelineCard
                         id={hotel.id}
@@ -221,13 +233,12 @@ export const Trips: React.FC<TripsProps> = ({
                   return (
                     <div
                       key={place.id}
-                      className={`overflow-hidden transition-all duration-450 ease-[cubic-bezier(0.4,0,0.2,1)] ${
-                        isCollapsed
+                      className={`overflow-hidden transition-all duration-450 ease-[cubic-bezier(0.4,0,0.2,1)] ${isCollapsed
                           ? 'w-0 flex-[0_0_0px] max-h-[195px] opacity-0 pointer-events-none p-0 m-0'
                           : isSelected
-                          ? 'w-full flex-1 max-h-[195px] opacity-100'
-                          : 'w-full flex-1 max-h-[320px] opacity-100'
-                      }`}
+                            ? 'w-full flex-1 max-h-[195px] opacity-100'
+                            : 'w-full flex-1 max-h-[320px] opacity-100'
+                        }`}
                     >
                       <TimelineCard
                         id={place.id}
@@ -243,6 +254,36 @@ export const Trips: React.FC<TripsProps> = ({
                     </div>
                   )
                 })}
+              </div>
+            </div>
+
+            {/* Timeline Item 3: Day 1 - Walking Transit Route (Hotel to Temple) */}
+            <div className="flex flex-col gap-2.5">
+              <div className="w-full">
+                <h4
+                  className="text-base md:text-lg font-bold text-slate-900 m-0"
+                  style={{ fontFamily: "var(--font-serif, 'Playfair Display', serif)" }}
+                >
+                  Day 1: Route & Transit
+                </h4>
+              </div>
+
+              {/* 100% Full-Width WalkTransitCard (OSRM output) */}
+              <div className="w-full">
+                <WalkTransitCard
+                  originName="Sowaka Heritage Sanctuary"
+                  originAddress="Gion District, Kyoto"
+                  originLat={34.9998}
+                  originLon={135.7788}
+                  destName="Kiyomizu-dera Temple"
+                  destAddress="Higashiyama Ward, Kyoto"
+                  destLat={34.9949}
+                  destLon={135.785}
+                  mode="walking"
+                  distanceKm={1.4}
+                  distanceMiles={0.9}
+                  durationMinutes={18}
+                />
               </div>
             </div>
           </div>

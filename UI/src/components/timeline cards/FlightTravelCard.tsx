@@ -114,10 +114,10 @@ export const FlightTravelCard: React.FC<FlightTravelCardProps> = ({
         boxZoom: false,
       })
 
-      // Minimalist warm-toned CartoDB Positron tiles
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        maxZoom: 18,
-        subdomains: 'abcd',
+      // Standard OpenStreetMap tiles (no API key required)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        subdomains: ['a', 'b', 'c'],
       }).addTo(map)
 
       const layerGroup = L.layerGroup().addTo(map)
@@ -129,6 +129,7 @@ export const FlightTravelCard: React.FC<FlightTravelCardProps> = ({
     const layerGroup = layerGroupRef.current
 
     if (map && layerGroup) {
+      map.invalidateSize()
       layerGroup.clearLayers()
 
       const originPoint: [number, number] = [currentFlight.fromLat, currentFlight.fromLon]
@@ -186,30 +187,29 @@ export const FlightTravelCard: React.FC<FlightTravelCardProps> = ({
         maxZoom: 7,
       })
     }
+
+    const timer = setTimeout(() => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize()
+      }
+    }, 50)
+
+    return () => clearTimeout(timer)
   }, [currentFlight])
 
   const handleNext = (e: React.MouseEvent) => {
     e.stopPropagation()
     const nextIdx = (currentIndex + 1) % flights.length
     setCurrentIndex(nextIdx)
-    console.log('[Flight Option Switched]:', flights[nextIdx])
   }
 
   const handlePrev = (e: React.MouseEvent) => {
     e.stopPropagation()
     const prevIdx = (currentIndex - 1 + flights.length) % flights.length
     setCurrentIndex(prevIdx)
-    console.log('[Flight Option Switched]:', flights[prevIdx])
   }
 
   const handleCardClick = () => {
-    console.log('[FlightTravelCard Selected]:', {
-      id: currentFlight.id,
-      airline: currentFlight.airline,
-      route: `${currentFlight.fromCode} -> ${currentFlight.toCode}`,
-      price: currentFlight.price,
-      stops: currentFlight.connections?.length || 0,
-    })
     if (onSelectFlight) {
       onSelectFlight(currentFlight)
     }
@@ -221,13 +221,42 @@ export const FlightTravelCard: React.FC<FlightTravelCardProps> = ({
   return (
     <div
       onClick={handleCardClick}
-      className={`w-full bg-white rounded-4 overflow-hidden shadow-sm border-0 transition-all duration-300 cursor-pointer flex flex-col md:flex-row items-stretch hover:shadow-md ${className}`}
-      style={{ width: '100%', minHeight: '235px' }}
+      className={`w-full bg-white rounded-3xl border border-slate-200/80 overflow-hidden shadow-xs transition-all duration-300 cursor-pointer flex flex-col hover:shadow-md ${className}`}
+      style={{ width: '100%' }}
     >
-      {/* LHS (50%): Ticket Details */}
-      <div className="w-full md:w-1/2 p-5 flex flex-col justify-between border-b md:border-b-0 md:border-r border-slate-100 bg-white">
-        {/* Top Header: Airline Name, Stop Type, Carousel Navigation */}
-        <div className="flex items-center justify-between gap-2">
+      {/* Full-Width Top Header: Stretched Simple Carousel Control */}
+      <div className="w-full bg-slate-50/90 border-b border-slate-200/80 px-4 py-2 flex items-center justify-between">
+        <button
+          type="button"
+          onClick={handlePrev}
+          className="w-7 h-7 rounded-full flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-200/70 transition-all cursor-pointer border-none bg-transparent"
+          title="Previous option"
+        >
+          <ChevronLeft size={16} />
+        </button>
+
+        <span
+          className="text-xs font-semibold text-slate-700 tracking-wide select-none"
+          style={{ fontFamily: "var(--font-sans, 'Outfit', sans-serif)" }}
+        >
+          Option {currentIndex + 1}
+        </span>
+
+        <button
+          type="button"
+          onClick={handleNext}
+          className="w-7 h-7 rounded-full flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-200/70 transition-all cursor-pointer border-none bg-transparent"
+          title="Next option"
+        >
+          <ChevronRight size={16} />
+        </button>
+      </div>
+
+      {/* Main Body (Split: LHS Ticket Details & RHS Map) */}
+      <div className="w-full flex-1 flex flex-col md:flex-row items-stretch min-h-[220px]">
+        {/* LHS (50%): Ticket Details */}
+        <div className="w-full md:w-1/2 p-5 flex flex-col justify-between border-b md:border-b-0 md:border-r border-slate-100 bg-white">
+          {/* Airline Name & Stop Type */}
           <div>
             <h4
               className="font-bold text-slate-900 text-base m-0 tracking-tight"
@@ -246,115 +275,89 @@ export const FlightTravelCard: React.FC<FlightTravelCardProps> = ({
             </span>
           </div>
 
-          {/* Carousel Next / Prev Controls */}
-          <div className="flex items-center gap-1.5 bg-slate-50 px-2 py-1 rounded-full border border-slate-200/60">
-            <button
-              type="button"
-              onClick={handlePrev}
-              className="w-5 h-5 rounded-full flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white transition-all cursor-pointer border-none bg-transparent"
-              title="Previous flight option"
-            >
-              <ChevronLeft size={13} />
-            </button>
-            <span
-              className="text-[11px] text-slate-500 font-semibold px-1"
-              style={{ fontFamily: "var(--font-sans, 'Outfit', sans-serif)" }}
-            >
-              {currentIndex + 1}/{flights.length}
-            </span>
-            <button
-              type="button"
-              onClick={handleNext}
-              className="w-5 h-5 rounded-full flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white transition-all cursor-pointer border-none bg-transparent"
-              title="Next flight option"
-            >
-              <ChevronRight size={13} />
-            </button>
-          </div>
-        </div>
-
-        {/* Flight Trajectory Section */}
-        <div className="flex items-center justify-between gap-3 my-4">
-          <div className="flex flex-col items-start">
-            <span
-              className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight"
-              style={{ fontFamily: "var(--font-sans, 'Outfit', sans-serif)" }}
-            >
-              {currentFlight.fromCode}
-            </span>
-            <span
-              className="text-xs font-semibold text-slate-600 mt-0.5"
-              style={{ fontFamily: "var(--font-serif, 'Playfair Display', serif)" }}
-            >
-              {currentFlight.fromCity}
-            </span>
-          </div>
-
-          {/* Route Arrow Indicator */}
-          <div className="flex-1 flex flex-col items-center px-2">
-            <div className="w-full flex items-center justify-center gap-1">
-              <div className="flex-1 h-[1.5px] bg-slate-300" />
-              <div className="w-2 h-2 rounded-full bg-[#00652c]" />
-              <div className="flex-1 h-[1.5px] bg-slate-300" />
-            </div>
-            <span className="text-[10px] text-slate-400 mt-1 font-medium">
-              {!isDirect && currentFlight.connections && currentFlight.connections[0].duration
-                ? currentFlight.connections[0].duration
-                : 'Direct Flight'}
-            </span>
-          </div>
-
-          <div className="flex flex-col items-end text-right">
-            <span
-              className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight"
-              style={{ fontFamily: "var(--font-sans, 'Outfit', sans-serif)" }}
-            >
-              {currentFlight.toCode}
-            </span>
-            <span
-              className="text-xs font-semibold text-slate-600 mt-0.5"
-              style={{ fontFamily: "var(--font-serif, 'Playfair Display', serif)" }}
-            >
-              {currentFlight.toCity}
-            </span>
-          </div>
-        </div>
-
-        {/* Bottom Bar: Baggage & Price */}
-        <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600 flex-wrap gap-2">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1">
-              <Luggage size={12} className={currentFlight.hasCarryOn ? 'text-[#00652c]' : 'text-slate-400'} />
-              <span className="text-[11px] text-slate-600">Carry-on</span>
-              {currentFlight.hasCarryOn ? (
-                <Check size={11} className="text-[#00652c]" />
-              ) : (
-                <X size={11} className="text-slate-400" />
-              )}
+          {/* Flight Trajectory Section */}
+          <div className="flex items-center justify-between gap-3 my-4">
+            <div className="flex flex-col items-start">
+              <span
+                className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight"
+                style={{ fontFamily: "var(--font-sans, 'Outfit', sans-serif)" }}
+              >
+                {currentFlight.fromCode}
+              </span>
+              <span
+                className="text-xs font-semibold text-slate-600 mt-0.5"
+                style={{ fontFamily: "var(--font-serif, 'Playfair Display', serif)" }}
+              >
+                {currentFlight.fromCity}
+              </span>
             </div>
 
-            <div className="flex items-center gap-1">
-              <span className="text-[11px] text-slate-600">Checked bag</span>
-              {currentFlight.hasCheckedBag ? (
-                <Check size={11} className="text-[#00652c]" />
-              ) : (
-                <X size={11} className="text-slate-400" />
-              )}
+            {/* Route Arrow Indicator */}
+            <div className="flex-1 flex flex-col items-center px-2">
+              <div className="w-full flex items-center justify-center gap-1">
+                <div className="flex-1 h-[1.5px] bg-slate-300" />
+                <div className="w-2 h-2 rounded-full bg-[#00652c]" />
+                <div className="flex-1 h-[1.5px] bg-slate-300" />
+              </div>
+              <span className="text-[10px] text-slate-400 mt-1 font-medium">
+                {!isDirect && currentFlight.connections && currentFlight.connections[0].duration
+                  ? currentFlight.connections[0].duration
+                  : 'Direct Flight'}
+              </span>
+            </div>
+
+            <div className="flex flex-col items-end text-right">
+              <span
+                className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight"
+                style={{ fontFamily: "var(--font-sans, 'Outfit', sans-serif)" }}
+              >
+                {currentFlight.toCode}
+              </span>
+              <span
+                className="text-xs font-semibold text-slate-600 mt-0.5"
+                style={{ fontFamily: "var(--font-serif, 'Playfair Display', serif)" }}
+              >
+                {currentFlight.toCity}
+              </span>
             </div>
           </div>
 
-          <span
-            className="text-base font-bold text-[#00652c]"
-            style={{ fontFamily: "var(--font-sans, 'Outfit', sans-serif)" }}
-          >
-            {currentFlight.price}
-          </span>
-        </div>
-      </div>
+          {/* Bottom Bar: Baggage & Price */}
+          <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600 flex-wrap gap-2">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1">
+                <Luggage size={12} className={currentFlight.hasCarryOn ? 'text-[#00652c]' : 'text-slate-400'} />
+                <span className="text-[11px] text-slate-600">Carry-on</span>
+                {currentFlight.hasCarryOn ? (
+                  <Check size={11} className="text-[#00652c]" />
+                ) : (
+                  <X size={11} className="text-slate-400" />
+                )}
+              </div>
 
-      {/* RHS (50%): Interactive Leaflet Polyline Map */}
-      <div className="w-full md:w-1/2 relative bg-slate-100 min-h-[220px] md:min-h-full overflow-hidden">
-        <div ref={mapContainerRef} className="w-full h-full min-h-[220px]" />
+              <div className="flex items-center gap-1">
+                <span className="text-[11px] text-slate-600">Checked bag</span>
+                {currentFlight.hasCheckedBag ? (
+                  <Check size={11} className="text-[#00652c]" />
+                ) : (
+                  <X size={11} className="text-slate-400" />
+                )}
+              </div>
+            </div>
+
+            <span
+              className="text-base font-bold text-[#00652c]"
+              style={{ fontFamily: "var(--font-sans, 'Outfit', sans-serif)" }}
+            >
+              {currentFlight.price}
+            </span>
+          </div>
+        </div>
+
+        {/* RHS (50%): Interactive Leaflet Polyline Map */}
+        <div className="w-full md:w-1/2 relative bg-slate-100 min-h-[220px] overflow-hidden">
+          <div ref={mapContainerRef} className="w-full h-full min-h-[220px]" />
+        </div>
       </div>
     </div>
   )

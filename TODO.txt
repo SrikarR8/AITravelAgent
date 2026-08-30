@@ -6,6 +6,22 @@ NOMAD'S DREAM - PROJECT TODO & DEFERRED ARCHITECTURE LOG
 - UI Component Design & Frontend Card Templates
 
 --------------------------------------------------------------------------------
+0. PRIORITY BACKEND & FRONTEND FIXES
+--------------------------------------------------------------------------------
+
+[ ] 0.1 Multi-Stop Routing Support (A -> B -> C -> ...)
+    - Backend: Update `Agent/tools/calculate_travel_time.py` to accept an arbitrary 
+      list of coordinate waypoints `[(lat1, lon1), (lat2, lon2), (lat3, lon3)...]` 
+      and query OSRM `/route/v1/{mode}/{lon1},{lat1};{lon2},{lat2};{lon3},{lat3}`.
+    - Frontend: Refactor `WalkTransitCard.tsx` to accept a `stops: RouteStop[]` array, 
+      rendering sequential waypoint markers (A, B, C, D...) on both the left timeline 
+      trail and the Leaflet polyline map, with a multi-stop Google Maps URL.
+
+[x] 0.2 Flight Card Top Header Option Switcher
+    - Updated `FlightTravelCard.tsx` with a clean full-width header bar displaying 
+      `< Option N >` across the static flight options with reliable map sizing.
+
+--------------------------------------------------------------------------------
 1. BACKEND & AGENT IMPLEMENTATION (DEFERRED TASKS)
 --------------------------------------------------------------------------------
 
@@ -42,16 +58,18 @@ NOMAD'S DREAM - PROJECT TODO & DEFERRED ARCHITECTURE LOG
 2. FRONTEND & UI IMPLEMENTATION (NEXT STEPS)
 --------------------------------------------------------------------------------
 
-[ ] 2.1 Left-Column Dynamic Card Templates (Design & Code)
-    - Card 1: Travel Tips Card (Cultural wisdom, local norms, etiquette tips)
-    - Card 2: Route & Map Card (Interactive map, origin/destination line, transit mode, ETA)
-    - Card 3: Hotel / Place / Activity Card (5-star rating, hero photography, badges, address)
-    - Card 4: Weather Widget Card (Minimalist iOS lock screen aesthetic, temp, condition, forecast)
+[ ] 2.1 Dynamic Card Templates (Design & Code)
+    - [ ] Card 1: Travel Tips Card (Cultural wisdom, local norms, etiquette tips)
+    - [x] Card 2: Route & Map Card (`WalkTransitCard.tsx` - OSRM walk/drive routes)
+    - [x] Card 3: Hotel / Place Card (`TimelineCard.tsx` - Accordion stays & sights)
+    - [ ] Card 4: Curated Activities Card (`ActivityCard.tsx` - Workshops & tours)
+    - [x] Card 5: Weather Widget Card (`WeatherCard.tsx` - Forecasts & metrics)
+    - [x] Card 6: Flight Travel Card (`FlightTravelCard.tsx` - Multi-tier routes)
 
 [ ] 2.2 In-App Trips Layout (Trips.tsx)
     - Responsive 2-column split view:
-      * Left Column: Stacked / animated dynamic context cards.
-      * Right Column: shadcn-chat AI Concierge interface.
+      * Left Column: ElevenLabs-inspired ChatWindow component mounted (`ChatWindow.tsx`).
+      * Right Column: Stacked / animated dynamic context timeline cards.
     - Card state manager: Dynamically mounts / updates cards based on conversation triggers.
 
 [ ] 2.3 Home & Settings Dashboard Expansion

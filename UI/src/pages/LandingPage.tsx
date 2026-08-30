@@ -68,7 +68,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </h1>
 
               <p className="hero-subtitle">
-                Experience travel that feels like a conversation. Our AI-concierge learns your soul's preferences to craft journeys that transcend the ordinary.
+                Experience travel that feels like a conversation. Nomad, your personal AI travel agent, learns your preferences to craft journeys that transcend the ordinary.
               </p>
 
               {/* Search / Plan with AI bar synchronized with Typewriter */}
@@ -124,7 +124,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   className="cta-button"
                 >
                   <span>✦</span>
-                  <span>Plan with AI</span>
+                  <span>Plan with Nomad</span>
                 </button>
               </div>
             </div>
@@ -151,10 +151,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   </div>
                   <div>
                     <h4 className="text-sm font-bold text-slate-900 m-0" style={{ fontFamily: "var(--font-sans)" }}>
-                      Your Nomad Guide
+                      Nomad • AI Travel Agent
                     </h4>
                     <p className="text-[11px] text-slate-500 m-0" style={{ fontFamily: "var(--font-sans)" }}>
-                      Powered by Empathy AI
+                      Your Intuitive Travel Companion
                     </p>
                   </div>
                 </div>
@@ -187,13 +187,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     className="text-2xl md:text-4xl font-bold text-slate-900 leading-tight mb-3"
                     style={{ fontFamily: "var(--font-serif, 'Playfair Display', serif)" }}
                   >
-                    A concierge that listens to your silences.
+                    Nomad listens to your silences.
                   </h2>
                   <p
                     className="text-xs md:text-sm text-slate-600 leading-relaxed m-0"
                     style={{ fontFamily: "var(--font-sans)" }}
                   >
-                    Standard travel sites give you lists. We give you stories. Our AI understands the nuances of your travel style—whether you seek the thrill of a hidden trail or the stillness of a coastal library.
+                    Standard travel sites give you lists. Nomad gives you stories. Nomad understands the nuances of your travel style—whether you seek the thrill of a hidden trail or the stillness of a coastal library.
                   </p>
                 </div>
 

@@ -188,27 +188,16 @@
   box-shadow: 0 0 6px rgba(255, 255, 255, 0.9);
 }
 
-/* Custom horizontal scrollbar for timeline card carousel */
+/* Custom scrollbar class: Smooth scrolling with hidden scrollbar */
 .timeline-scrollbar {
+  overflow-y: auto;
   overflow-x: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
 .timeline-scrollbar::-webkit-scrollbar {
-  height: 6px;
-}
-
-.timeline-scrollbar::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.04);
-  border-radius: 9999px;
-}
-
-.timeline-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #cbd5e1;
-  border-radius: 9999px;
-}
-
-.timeline-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: #94a3b8;
+  display: none !important;
+  width: 0px !important;
+  height: 0px !important;
 }

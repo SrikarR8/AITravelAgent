@@ -46,12 +46,12 @@ export const TimelineCard: React.FC<TimelineCardProps> = ({
     }
   }
 
-  // Fallback AI summary to fill space elegantly if none is provided
+  // Fallback summary to fill space elegantly if none is provided
   const aiSummary =
     summary ||
     (price
-      ? 'Curated by AI concierge for exceptional tranquility, authentic local architecture, and effortless access to cultural landmarks.'
-      : 'Handpicked for its cultural significance, panoramic viewpoints, and immersive exploration value.')
+      ? 'Curated by Nomad for exceptional tranquility, authentic local architecture, and effortless access to cultural landmarks.'
+      : 'Handpicked by Nomad for its cultural significance, panoramic viewpoints, and immersive exploration value.')
 
   // If expanded to full width: Render Horizontal Split Card (30-35% Image on LHS, Details on RHS)
   if (isExpanded || isSelected) {

@@ -2,6 +2,24 @@
 @import "leaflet/dist/leaflet.css";
 @import "tailwindcss";
 
+/* Universal Scrollbar Removal across all browsers while preserving scroll functionality */
+*,
+*::before,
+*::after,
+html,
+body {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE and Edge */
+}
+
+*::-webkit-scrollbar,
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none !important; /* Chrome, Safari, Opera */
+  width: 0px !important;
+  height: 0px !important;
+}
+
 :root {
   /* Colors */
   --color-surface: #f8f9ff;
